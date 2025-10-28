@@ -1,3 +1,4 @@
+// ...existing code...
 "use client"
 
 import type React from "react"
@@ -64,14 +65,36 @@ export default function SignUpPage() {
 
       if (error) throw error
 
-      // Check if email confirmation is required
-      if (data?.user && !data.user.confirmed_at) {
-        console.log("[v0] Email confirmation required")
-        router.push("/auth/verify-email")
-      } else if (data?.user) {
-        console.log("[v0] User confirmed, redirecting to dashboard")
+      // If signUp returned a session then user is already logged in — go to dashboard
+      if (data?.session) {
+        console.log("[v0] Signup created session — redirecting to dashboard")
         router.push("/dashboard")
+        return
       }
+
+      // Try to sign the user in immediately (most UX-friendly). If sign-in fails
+      // because the project requires email confirmation, fall back to verify page.
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        console.warn("[v0] Sign-in after signup failed:", signInError)
+        // common case: email confirmation required — redirect to verify page
+        router.push("/auth/verify-email")
+        return
+      }
+
+      if (signInData?.session) {
+        console.log("[v0] Sign-in successful, redirecting to dashboard")
+        router.push("/dashboard")
+        return
+      }
+
+      // Fallback: redirect to verify-email if no session established
+      console.log("[v0] No session after signup/signin — redirecting to verify-email")
+      router.push("/auth/verify-email")
     } catch (error: unknown) {
       console.error("[v0] Signup error:", error)
       setError(error instanceof Error ? error.message : "An error occurred")
@@ -143,3 +166,4 @@ export default function SignUpPage() {
     </div>
   )
 }
+
