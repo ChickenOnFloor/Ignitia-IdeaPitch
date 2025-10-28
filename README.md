@@ -2,7 +2,7 @@
 
 Transform your startup ideas into complete brands with AI-generated landing pages.
 
-![Homepage screenshot]([https://github.com/ChickenOnFloor/Ignitia-IdeaPitch/blob/main/public/ScreenShot.png?raw=true])
+![Homepage screenshot](https://github.com/ChickenOnFloor/Ignitia-IdeaPitch/blob/main/public/ScreenShot.png?raw=true)
 
 ## Deployment (Vercel)
 Live site: https://ignitia-idea-pitch.vercel.app
