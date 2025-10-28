@@ -8,6 +8,7 @@ import { DashboardContent } from "@/components/dashboard-content"
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [generations, setGenerations] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   const supabase = createBrowserClient(
@@ -28,19 +29,25 @@ export default function DashboardPage() {
 
       setUser(user)
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("generations")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
-      setGenerations(data || [])
+      if (error) {
+        console.error("Error fetching generations:", error)
+      } else {
+        setGenerations(data || [])
+      }
+
+      setLoading(false)
     }
 
     getUserData()
-  }, [])
+  }, [supabase, router])
 
-  if (!user) return <p className="text-center mt-20">Loading...</p>
+  if (loading) return <p className="text-center mt-20">Loading...</p>
 
   return (
     <div className="flex min-h-screen flex-col justify-center">

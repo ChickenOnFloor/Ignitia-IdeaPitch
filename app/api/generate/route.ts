@@ -21,11 +21,11 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "user",
-            content: `Create a professional startup landing page for: "${idea}"
+  model,
+  messages: [
+    {
+      role: "user",
+      content: `Create a professional startup landing page for: "${idea}"
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
@@ -34,45 +34,82 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "description": "Description",
   "targetAudience": "Audience",
   "keyFeatures": ["feature1", "feature2", "feature3", "feature4", "feature5"],
-  "colorScheme": {"primary": "#3b82f6", "secondary": "#1f2937", "accent": "#ef4444"},
+  "colorScheme": {
+    "primary": "#hex",
+    "secondary": "#hex", 
+    "accent": "#hex",
+    "background": "#hex",
+    "text": "#hex"
+  },
+  "designStyle": "modern|minimal|corporate|creative|tech|gradient|dark",
   "landingPageHtml": "Complete HTML"
 }
 
+IMPORTANT: Generate DIFFERENT, CREATIVE designs each time. Vary these elements:
+
+DESIGN VARIATIONS:
+- Layout: Choose from hero-centered, split-screen, asymmetric, card-based, or full-screen video/background
+- Navigation: Top fixed, transparent on scroll, sidebar, or minimalist
+- Color schemes: Use complementary, analogous, or triadic color schemes. Consider dark mode variants
+- Typography: Combine different font families (sans-serif + serif, monospace accents)
+- Components: Glass morphism, gradient backgrounds, subtle animations, hover effects
+- Section ordering: Mix up standard flow with creative arrangements
+
 For landingPageHtml, generate complete, valid HTML5 with:
 
-1. Full structure: <!DOCTYPE html><html><head>...</head><body>...</body></html>
-2. Responsive navbar with mobile hamburger menu that toggles dropdown
-3. Hero section with headline, description, and CTA buttons
-4. Features section with 6 cards in grid layout
-5. How it works section with 4 numbered steps
-6. Pricing section with 3 pricing tiers
-7. Contact/CTA section
-8. Footer with links
+REQUIRED SECTIONS (arrange creatively):
+1. Navigation with smooth scroll and mobile hamburger
+2. Hero section with engaging headline and CTA
+3. Features/benefits (4-6 items in creative layout)
+4. How it works/process (3-4 steps with visual elements)
+5. Social proof/testimonials (2-3 testimonials)
+6. Pricing (2-3 tiers with clear differentiation) 
+7. Final CTA/contact section
+8. Footer with links and social
 
-Design requirements:
-- Use the provided color scheme (primary, secondary, accent)
-- Clean, minimal design with proper spacing
-- Responsive: works on mobile, tablet, desktop
-- Smooth scroll navigation when clicking navbar links
-- Mobile menu dropdown with smooth animation
-- All sections have proper IDs for linking
-- Professional typography and spacing
-- Subtle shadows and hover effects
-- All content is visible and readable
+DESIGN REQUIREMENTS:
+- Fully responsive (mobile-first approach)
+- Modern CSS: Flexbox/Grid, custom properties, transitions
+- Interactive elements: Hover states, smooth scrolling, mobile menu
+- Accessibility: Proper contrast, semantic HTML, alt texts
+- Performance: Optimized CSS, efficient JavaScript
+- Visual hierarchy: Clear typography scale, spacing system
 
-Include complete CSS in <style> tag and JavaScript in <script> tag for:
-- Mobile menu toggle functionality
+CSS FRAMEWORK: Use modern CSS features:
+- CSS Grid and Flexbox for layouts
+- CSS Custom Properties for theming
+- CSS transitions and transforms
+- Responsive units (rem, %, vw/vh)
+- Clamp() for fluid typography
+
+JAVASCRIPT: Include for:
+- Mobile navigation toggle
 - Smooth scroll to sections
-- Responsive design
+- Optional: Interactive elements if relevant
 
-Return ONLY the JSON object.`,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 8000,
-      }),
+Generate COMPLETE, SELF-CONTAINED HTML with:
+- Full HTML5 structure with proper meta tags
+- Embedded CSS in <style> with creative, unique styling
+- Embedded JavaScript for interactivity
+- Font imports from Google Fonts (choose complementary pairs)
+- Icons from Font Awesome or similar CDN
+
+COLOR SCHEME GUIDELINES:
+- Primary: Main brand color
+- Secondary: Supporting color  
+- Accent: Call-to-action highlights
+- Background: Page background
+- Text: Primary text color
+
+Return ONLY the JSON object with valid, complete HTML that works when rendered.`
+    }
+  ],
+  temperature: 0.8,
+  max_tokens: 10000,
+}),
     })
 
+    
     console.log("[v0] API Response status:", response.status)
     console.log("[v0] API Response ok:", response.ok)
 

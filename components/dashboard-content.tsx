@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import beautify from "js-beautify"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -40,18 +41,19 @@ export function DashboardContent({ initialGenerations }: { initialGenerations: G
     try {
       const response = await fetch(`/api/generations/${id}`, {
         method: "DELETE",
+        credentials: "include",
       })
 
       if (!response.ok) {
         throw new Error("Failed to delete generation")
       }
-
-      setGenerations(generations.filter((g) => g.id !== id))
+      setGenerations((prev) => prev.filter((g) => g.id !== id))
     } catch (error) {
       console.error("Delete error:", error)
       alert("Failed to delete generation")
     }
   }
+
 
   const handleExportPDF = async (generation: Generation) => {
     try {
@@ -273,15 +275,23 @@ export function DashboardContent({ initialGenerations }: { initialGenerations: G
 
                   <TabsContent value="code" className="pt-4">
                     <div className="relative">
-                      <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-                        <code>{selectedGeneration.landing_page_html}</code>
+                      <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
+                        <code>
+                          {beautify.html(selectedGeneration.landing_page_html, {
+                            indent_size: 2,
+                            wrap_line_length: 80,
+                            preserve_newlines: true,
+                          })}
+                        </code>
                       </pre>
                       <Button
                         size="sm"
                         variant="outline"
                         className="absolute right-4 top-4 bg-transparent"
                         onClick={() => {
-                          navigator.clipboard.writeText(selectedGeneration.landing_page_html)
+                          navigator.clipboard.writeText(
+                            beautify.html(selectedGeneration.landing_page_html, { indent_size: 2 })
+                          )
                         }}
                       >
                         Copy Code

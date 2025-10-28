@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Sparkles, Save } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import beautify from "js-beautify"
 
 interface GenerationResult {
   startupName: string
@@ -65,9 +67,23 @@ export function GeneratorForm({ userId }: { userId: string }) {
     setError(null)
 
     try {
+      // 1. Get the user’s session
+      const supabase = createClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        throw new Error("You must be logged in to save.")
+      }
+
+      // 2. Include the token in Authorization header
       const response = await fetch("/api/generations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           userId,
           ideaInput: idea,
@@ -225,15 +241,23 @@ export function GeneratorForm({ userId }: { userId: string }) {
 
               <TabsContent value="code" className="pt-6">
                 <div className="relative">
-                  <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
-                    <code>{result.landingPageHtml}</code>
+                  <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm whitespace-pre-wrap">
+                    <code>
+                      {beautify.html(result.landingPageHtml || "", {
+                        indent_size: 2,
+                        wrap_line_length: 80,
+                        preserve_newlines: true,
+                      })}
+                    </code>
                   </pre>
                   <Button
                     size="sm"
                     variant="outline"
                     className="absolute right-4 top-4 bg-transparent"
                     onClick={() => {
-                      navigator.clipboard.writeText(result.landingPageHtml)
+                      navigator.clipboard.writeText(
+                        beautify.html(result.landingPageHtml || "", { indent_size: 2 })
+                      )
                     }}
                   >
                     Copy Code

@@ -1,25 +1,68 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+async function createRouteClient(request: Request) {
+  const cookieHeader = request.headers.get("cookie") ?? ""
+
+  // parse cookies into [{ name, value }]
+  const parsed = cookieHeader
+    .split(";")
+    .filter(Boolean)
+    .map((cookie) => {
+      const [name, ...rest] = cookie.trim().split("=")
+      return { name, value: rest.join("=") }
+    })
+
+  // adapter object using the modern getAll / setAll API expected by createServerClient
+  const cookieAdapter = {
+    getAll() {
+      // return array of { name, value } (same shape auth expects)
+      return parsed
+    },
+    // setAll may be called by the client for token refresh — noop here
+    // If you need to persist cookies from Supabase, collect these and set
+    // `Set-Cookie` headers on the Response returned from the route.
+    setAll(_cookies: { name: string; value: string }[]) {
+      /* intentionally noop for now */
+    },
+  }
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: cookieAdapter,
+    }
+  )
+}
+
+export async function DELETE(request: Request, context: any) {
   try {
-    const supabase = await createClient()
-    const { id } = await params
+    // params in app route handlers can be a Promise — await it
+    const params = await context.params
+    const { id } = params
 
-    // Verify user is authenticated
+    const supabase = await createRouteClient(request)
+
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
-    if (!user) {
+
+    if (userError || !user) {
+      console.error("Unauthorized delete:", userError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Delete generation (RLS will ensure user can only delete their own)
-    const { error } = await supabase.from("generations").delete().eq("id", id).eq("user_id", user.id)
+    const { error } = await supabase
+      .from("generations")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
 
     if (error) {
-      console.error("Database error:", error)
-      return NextResponse.json({ error: "Failed to delete generation" }, { status: 500 })
+      console.error("Supabase delete error:", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

@@ -1,5 +1,5 @@
 "use client"
-import type React from "react"
+import React, { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -15,29 +14,46 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace("/dashboard")
+      }
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        router.replace("/dashboard")
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault()
-  const supabase = createClient()
-  setIsLoading(true)
-  setError(null)
+    e.preventDefault()
+    const supabase = createClient()
+    setIsLoading(true)
+    setError(null)
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-      if (data.session) {
-        await supabase.auth.setSession(data.session)
-        router.refresh()
-        router.push("/dashboard")
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+        if (data.session) {
+          await supabase.auth.setSession(data.session)
+          router.refresh()
+          router.push("/dashboard")
+        }
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : "An error occurred")
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   return (

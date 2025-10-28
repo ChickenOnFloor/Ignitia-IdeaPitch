@@ -1,14 +1,39 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
+
+export async function createRouteClient(request: Request) {
+  // Read cookies from request headers
+  const cookieHeader = request.headers.get("cookie") ?? ""
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieHeader
+            .split(";")
+            .filter(Boolean)
+            .map((cookie) => {
+              const [name, ...rest] = cookie.trim().split("=")
+              return { name, value: rest.join("=") }
+            })
+        },
+      },
+    }
+  )
+
+  return supabase
+}
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createRouteClient(request)
 
-    // Verify user is authenticated
     const {
       data: { user },
     } = await supabase.auth.getUser()
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -17,7 +42,6 @@ export async function POST(request: Request) {
     const { ideaInput, startupName, tagline, description, targetAudience, keyFeatures, colorScheme, landingPageHtml } =
       body
 
-    // Insert generation into database
     const { data, error } = await supabase
       .from("generations")
       .insert({
@@ -46,19 +70,18 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createRouteClient(request)
 
-    // Verify user is authenticated
     const {
       data: { user },
     } = await supabase.auth.getUser()
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Fetch user's generations
     const { data, error } = await supabase
       .from("generations")
       .select("*")
