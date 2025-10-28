@@ -2,6 +2,12 @@
 
 Transform your startup ideas into complete brands with AI-generated landing pages.
 
+![Homepage screenshot](/ScreenShot.png)
+
+## Deployment (Vercel)
+Live site: https://ignitia-idea-pitch.vercel.app
+
+
 ## Features
 
 - 🤖 AI-powered startup concept generation
@@ -28,6 +34,7 @@ Create a `.env.local` file with the following variables:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
 
 # OpenRouter API
 OPENROUTER_API_KEY=your_openrouter_api_key
